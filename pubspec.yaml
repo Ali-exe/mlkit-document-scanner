@@ -1,10 +1,10 @@
 name: mlkit_document_scanner
-description: "MLKit Document Scanner plugin for Flutter applications"
+description: Flutter plugin bringing MLKit Document Scanner to Flutter
 version: 0.0.1
 homepage: https://github.com/sunderee/mlkit-document-scanner
 
 environment:
-  sdk: ">=3.3.0"
+  sdk: ">=3.3.0 <4.0.0"
   flutter: ">=3.19.2"
 
 dependencies:
