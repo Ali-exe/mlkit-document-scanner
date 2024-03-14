@@ -13,26 +13,35 @@ internal class MlkitDocumentScannerLibrary {
     fun buildGmsDocumentScanner(
         maximumNumberOfPages: Int,
         galleryImportAllowed: Boolean,
-        scannerMode: Int,
+        scannerMode: Int
     ): GmsDocumentScanner {
         val options = GmsDocumentScannerOptions.Builder()
             .setGalleryImportAllowed(galleryImportAllowed)
             .setPageLimit(maximumNumberOfPages)
-            .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_PDF)
+            .setResultFormats(
+                GmsDocumentScannerOptions.RESULT_FORMAT_JPEG,
+                GmsDocumentScannerOptions.RESULT_FORMAT_PDF
+            )
             .setScannerMode(scannerMode)
             .build()
 
         return GmsDocumentScanning.getClient(options)
     }
 
-    fun handleActivityResult(data: Intent?, eventSink: EventChannel.EventSink?) {
-        GmsDocumentScanningResult.fromActivityResultIntent(data)?.pdf?.let {
-            Log.d(LOGGING_TAG, "Received PDF ${it.uri}")
-            eventSink?.success(it.uri.toFile().readBytes())
+    fun handleActivityResult(
+        data: Intent?,
+        eventSinkJPEG: EventChannel.EventSink?,
+        eventSinkPDF: EventChannel.EventSink?
+    ) {
+        GmsDocumentScanningResult.fromActivityResultIntent(data)?.also { result ->
+            result.pages?.let {
+                Log.d(LOGGING_TAG, "Received JPEG pages count ${it.size}")
+                eventSinkJPEG?.success(it.map { pages -> pages.imageUri.toFile().readBytes() })
+            }
+            result.pdf?.let {
+                Log.d(LOGGING_TAG, "Received PDF file with pages count ${it.pageCount}")
+                eventSinkPDF?.success(listOf(it.uri.toFile().readBytes()))
+            }
         }
-    }
-
-    companion object {
-        private const val LOGGING_TAG = "MLKit Library"
     }
 }
