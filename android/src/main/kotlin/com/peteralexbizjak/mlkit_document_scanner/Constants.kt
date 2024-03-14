@@ -6,7 +6,7 @@ internal const val LOGGING_TAG = "MLKit Document Scanner"
 // Channel names
 internal const val METHOD_CHANNEL = "mlkit_document_scanner_method_channel"
 internal const val EVENT_CHANNEL_JPEG = "mlkit_document_scanner_event_channel_jpeg"
-internal const val EVENT_CHANNEL_PDF = "mlkit_document_scanner_event_channel_png"
+internal const val EVENT_CHANNEL_PDF = "mlkit_document_scanner_event_channel_pdf"
 
 // Method names
 internal const val START_DOCUMENT_SCANNER = "startDocumentScanner"
@@ -15,6 +15,7 @@ internal const val START_DOCUMENT_SCANNER = "startDocumentScanner"
 internal const val ARGUMENT_NUMBER_OF_PAGES = "maximumNumberOfPages"
 internal const val ARGUMENT_GALLERY_IMPORT_ALLOWED = "galleryImportAllowed"
 internal const val ARGUMENT_SCANNER_MODE = "scannerMode"
+internal const val ARGUMENT_RESULT_MODE = "resultMode"
 
 // Error codes and messages
 internal const val ERROR_CODE_START_SCAN_INTENT_FAILURE = "error-start-scan-intent"

@@ -13,19 +13,28 @@ internal class MlkitDocumentScannerLibrary {
     fun buildGmsDocumentScanner(
         maximumNumberOfPages: Int,
         galleryImportAllowed: Boolean,
-        scannerMode: Int
+        scannerMode: Int,
+        resultMode: DocumentScannerResultMode
     ): GmsDocumentScanner {
-        val options = GmsDocumentScannerOptions.Builder()
+        var options = GmsDocumentScannerOptions.Builder()
             .setGalleryImportAllowed(galleryImportAllowed)
             .setPageLimit(maximumNumberOfPages)
-            .setResultFormats(
+            .setScannerMode(scannerMode)
+
+        options = when (resultMode) {
+            DocumentScannerResultMode.JPEG_PAGES -> options.setResultFormats(
+                GmsDocumentScannerOptions.RESULT_FORMAT_JPEG
+            )
+
+            DocumentScannerResultMode.PDF_FILE -> options.setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_PDF)
+            
+            DocumentScannerResultMode.BOTH -> options.setResultFormats(
                 GmsDocumentScannerOptions.RESULT_FORMAT_JPEG,
                 GmsDocumentScannerOptions.RESULT_FORMAT_PDF
             )
-            .setScannerMode(scannerMode)
-            .build()
+        }
 
-        return GmsDocumentScanning.getClient(options)
+        return GmsDocumentScanning.getClient(options.build())
     }
 
     fun handleActivityResult(
@@ -34,13 +43,25 @@ internal class MlkitDocumentScannerLibrary {
         eventSinkPDF: EventChannel.EventSink?
     ) {
         GmsDocumentScanningResult.fromActivityResultIntent(data)?.also { result ->
-            result.pages?.let {
-                Log.d(LOGGING_TAG, "Received JPEG pages count ${it.size}")
-                eventSinkJPEG?.success(it.map { pages -> pages.imageUri.toFile().readBytes() })
+            result.pages.let {
+                if (it != null) {
+                    Log.d(LOGGING_TAG, "JPEG pages count ${it.size}")
+                    eventSinkJPEG?.success(it.map { page -> page.imageUri.toFile().readBytes() })
+                } else {
+                    Log.d(LOGGING_TAG, "null response (result.pages)")
+                    eventSinkJPEG?.success(null)
+                }
+
+
             }
-            result.pdf?.let {
-                Log.d(LOGGING_TAG, "Received PDF file with pages count ${it.pageCount}")
-                eventSinkPDF?.success(listOf(it.uri.toFile().readBytes()))
+            result.pdf.let {
+                if (it != null) {
+                    Log.d(LOGGING_TAG, "PDF pages count ${it.pageCount}")
+                    eventSinkPDF?.success(it.uri.toFile().readBytes())
+                } else {
+                    Log.d(LOGGING_TAG, "null response (result.pdf)")
+                    eventSinkPDF?.success(null)
+                }
             }
         }
     }

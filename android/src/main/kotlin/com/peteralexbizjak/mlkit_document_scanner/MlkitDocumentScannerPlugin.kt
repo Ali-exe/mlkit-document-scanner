@@ -93,9 +93,13 @@ class MlkitDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
                         GmsDocumentScannerOptions.SCANNER_MODE_BASE,
                         GmsDocumentScannerOptions.SCANNER_MODE_BASE_WITH_FILTER
                     )
-
                     if (allowedScannerModes.contains(it)) it else GmsDocumentScannerOptions.SCANNER_MODE_FULL
-                } ?: GmsDocumentScannerOptions.SCANNER_MODE_FULL
+                } ?: GmsDocumentScannerOptions.SCANNER_MODE_FULL,
+                resultMode = DocumentScannerResultMode.getModeFromValue(
+                    call.argument<Int>(
+                        ARGUMENT_SCANNER_MODE
+                    ) ?: 2
+                )
             )
 
             // Launch document scanner activity, and collect failure if it occurs
@@ -122,21 +126,13 @@ class MlkitDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
-        eventChannelPDF.setStreamHandler(null)
-        eventChannelJPEG.setStreamHandler(null)
     }
 
     override fun onDetachedFromActivity() {
         activity = null
-        channel.setMethodCallHandler(null)
-        eventChannelPDF.setStreamHandler(null)
-        eventChannelJPEG.setStreamHandler(null)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
         activity = null
-        channel.setMethodCallHandler(null)
-        eventChannelPDF.setStreamHandler(null)
-        eventChannelJPEG.setStreamHandler(null)
     }
 }
