@@ -10,14 +10,23 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 final class MlkitDocumentScannerPlugin extends PlatformInterface {
   static const _methodChannel =
       MethodChannel('mlkit_document_scanner_method_channel');
-  static const _eventChannel =
-      EventChannel('mlkit_document_scanner_event_channel');
+  static const _eventChannelJPEG =
+      EventChannel('mlkit_document_scanner_event_channel_jpeg');
+  static const _eventChannelPDF =
+      EventChannel('mlkit_document_scanner_event_channel_pdf');
 
   MlkitDocumentScannerPlugin({required super.token});
 
-  /// This stream contains full stream of PDF data that came from the PDF scan.
-  Stream<Uint8List> get scanResults {
-    return _eventChannel
+  /// This stream contains full stream of JPEG data that came from the scan.
+  Stream<List<Uint8List>?> get jpegScanResults {
+    return _eventChannelJPEG
+        .receiveBroadcastStream()
+        .map((event) => (event as List<dynamic>).cast<Uint8List>());
+  }
+
+  /// This stream contains full stream of PDF data that came from the scan.
+  Stream<Uint8List?> get pdfScanResults {
+    return _eventChannelPDF
         .receiveBroadcastStream()
         .map((event) => event as Uint8List);
   }
@@ -31,15 +40,20 @@ final class MlkitDocumentScannerPlugin extends PlatformInterface {
   /// the photo gallery.
   /// - [scannerMode] customize the editing functionalities available to the
   /// user by choosing from 3 modes available in [MlkitDocumentScannerMode].
+  /// - [resultMode] sets the result format, this is, either JPEG pages or a
+  /// single PDF document. This will determine which stream ([jpegScanResults]
+  /// or [pdfScanResults]) will receive updates.
   Future<void> startDocumentScanner({
     required int maximumNumberOfPages,
     required bool galleryImportAllowed,
     required MlkitDocumentScannerMode scannerMode,
+    required DocumentScannerResultMode resultMode,
   }) async {
     await _methodChannel.invokeMethod('startDocumentScanner', {
       'maximumNumberOfPages': maximumNumberOfPages,
       'galleryImportAllowed': galleryImportAllowed,
       'scannerMode': scannerMode.code,
+      'resultMode': resultMode.code,
     });
   }
 }
@@ -64,4 +78,23 @@ enum MlkitDocumentScannerMode {
   final int code;
 
   const MlkitDocumentScannerMode(this.code);
+}
+
+/// Options on which stream should receive updates.
+enum DocumentScannerResultMode {
+  /// Only send updates to [MlkitDocumentScannerPlugin.jpegScanResults].
+  jpegPages(0),
+
+  /// Only send updates to [MlkitDocumentScannerPlugin.pdfScanResults].
+  pdfFile(1),
+
+  /// Send updates to both [MlkitDocumentScannerPlugin.jpegScanResults] and
+  /// [MlkitDocumentScannerPlugin.pdfScanResults]. Note that using this option
+  /// may negatively impact performance.
+  both(2);
+
+  /// Only used internally.
+  final int code;
+
+  const DocumentScannerResultMode(this.code);
 }

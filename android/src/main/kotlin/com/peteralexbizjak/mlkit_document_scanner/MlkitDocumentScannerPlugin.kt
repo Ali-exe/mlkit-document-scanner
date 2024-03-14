@@ -21,31 +21,37 @@ class MlkitDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
     private var library: MlkitDocumentScannerLibrary = MlkitDocumentScannerLibrary()
 
     private lateinit var channel: MethodChannel
-    private lateinit var eventChannel: EventChannel
+    private lateinit var eventChannelJPEG: EventChannel
+    private lateinit var eventChannelPDF: EventChannel
 
     private var activity: Activity? = null
-    private var eventSink: EventChannel.EventSink? = null
+    private var eventSinkJPEG: EventChannel.EventSink? = null
+    private var eventSinkPDF: EventChannel.EventSink? = null
     private var documentScannerLauncher: ActivityResultLauncher<IntentSenderRequest>? = null
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        channel = MethodChannel(
-            flutterPluginBinding.binaryMessenger,
-            "mlkit_document_scanner_method_channel"
-        )
-        eventChannel =
-            EventChannel(
-                flutterPluginBinding.binaryMessenger,
-                "mlkit_document_scanner_event_channel"
-            )
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, METHOD_CHANNEL)
+        eventChannelJPEG = EventChannel(flutterPluginBinding.binaryMessenger, EVENT_CHANNEL_JPEG)
+        eventChannelPDF = EventChannel(flutterPluginBinding.binaryMessenger, EVENT_CHANNEL_PDF)
+
 
         channel.setMethodCallHandler(this)
-        eventChannel.setStreamHandler(object : EventChannel.StreamHandler {
+        eventChannelJPEG.setStreamHandler(object : EventChannel.StreamHandler {
             override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                eventSink = events
+                eventSinkJPEG = events
             }
 
             override fun onCancel(arguments: Any?) {
-                eventSink = null
+                eventSinkJPEG = null
+            }
+        })
+        eventChannelPDF.setStreamHandler(object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                eventSinkPDF = events
+            }
+
+            override fun onCancel(arguments: Any?) {
+                eventSinkPDF = null
             }
         })
     }
@@ -59,7 +65,7 @@ class MlkitDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
             documentScannerLauncher = (activity as ComponentActivity)
                 .registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
                     if (result.resultCode == RESULT_OK) {
-                        library.handleActivityResult(result.data, eventSink)
+                        library.handleActivityResult(result.data, eventSinkJPEG, eventSinkPDF)
                     }
                 }
         } else {
@@ -76,6 +82,9 @@ class MlkitDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
         Log.d(LOGGING_TAG, "onMethodCall called for ${call.method}")
 
         if (call.method == START_DOCUMENT_SCANNER) {
+            Log.d(LOGGING_TAG, call.arguments.toString())
+
+
             // Construct document scanner
             val scanner = library.buildGmsDocumentScanner(
                 maximumNumberOfPages = call.argument<Int>(ARGUMENT_NUMBER_OF_PAGES) ?: 1,
@@ -87,9 +96,11 @@ class MlkitDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
                         GmsDocumentScannerOptions.SCANNER_MODE_BASE,
                         GmsDocumentScannerOptions.SCANNER_MODE_BASE_WITH_FILTER
                     )
-
                     if (allowedScannerModes.contains(it)) it else GmsDocumentScannerOptions.SCANNER_MODE_FULL
-                } ?: GmsDocumentScannerOptions.SCANNER_MODE_FULL
+                } ?: GmsDocumentScannerOptions.SCANNER_MODE_FULL,
+                resultMode = DocumentScannerResultMode.values()[call.argument<Int>(
+                    ARGUMENT_RESULT_MODE
+                ) ?: 2],
             )
 
             // Launch document scanner activity, and collect failure if it occurs
@@ -124,9 +135,5 @@ class MlkitDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
 
     override fun onDetachedFromActivityForConfigChanges() {
         activity = null
-    }
-
-    companion object {
-        private const val LOGGING_TAG = "MLKit"
     }
 }
