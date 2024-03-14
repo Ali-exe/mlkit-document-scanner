@@ -93,6 +93,7 @@ enum DocumentScannerResultMode {
   /// may negatively impact performance.
   both(2);
 
+  /// Only used internally.
   final int code;
 
   const DocumentScannerResultMode(this.code);

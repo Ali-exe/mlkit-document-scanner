@@ -82,6 +82,9 @@ class MlkitDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
         Log.d(LOGGING_TAG, "onMethodCall called for ${call.method}")
 
         if (call.method == START_DOCUMENT_SCANNER) {
+            Log.d(LOGGING_TAG, call.arguments.toString())
+
+
             // Construct document scanner
             val scanner = library.buildGmsDocumentScanner(
                 maximumNumberOfPages = call.argument<Int>(ARGUMENT_NUMBER_OF_PAGES) ?: 1,
@@ -95,11 +98,9 @@ class MlkitDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
                     )
                     if (allowedScannerModes.contains(it)) it else GmsDocumentScannerOptions.SCANNER_MODE_FULL
                 } ?: GmsDocumentScannerOptions.SCANNER_MODE_FULL,
-                resultMode = DocumentScannerResultMode.getModeFromValue(
-                    call.argument<Int>(
-                        ARGUMENT_SCANNER_MODE
-                    ) ?: 2
-                )
+                resultMode = DocumentScannerResultMode.values()[call.argument<Int>(
+                    ARGUMENT_RESULT_MODE
+                ) ?: 2],
             )
 
             // Launch document scanner activity, and collect failure if it occurs

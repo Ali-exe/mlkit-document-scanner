@@ -42,7 +42,7 @@ final class _MyAppState extends State<MyApp> {
                   maximumNumberOfPages: 1,
                   galleryImportAllowed: true,
                   scannerMode: MlkitDocumentScannerMode.full,
-                  resultMode: DocumentScannerResultMode.jpegPages,
+                  resultMode: DocumentScannerResultMode.both,
                 ),
                 child: const Text('Start scanner'),
               ),

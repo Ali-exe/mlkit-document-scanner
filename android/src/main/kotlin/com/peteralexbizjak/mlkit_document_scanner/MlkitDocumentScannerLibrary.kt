@@ -16,10 +16,16 @@ internal class MlkitDocumentScannerLibrary {
         scannerMode: Int,
         resultMode: DocumentScannerResultMode
     ): GmsDocumentScanner {
+        Log.d(
+            LOGGING_TAG, "Building document scanner for:\n" +
+                    "    - maximum number of pages: $maximumNumberOfPages\n" +
+                    "    - gallery imports allowed: $galleryImportAllowed\n" +
+                    "    - scanner mode: $scannerMode\n" +
+                    "    - result mode: ${resultMode.ordinal}\n"
+        )
         var options = GmsDocumentScannerOptions.Builder()
             .setGalleryImportAllowed(galleryImportAllowed)
             .setPageLimit(maximumNumberOfPages)
-            .setScannerMode(scannerMode)
 
         options = when (resultMode) {
             DocumentScannerResultMode.JPEG_PAGES -> options.setResultFormats(
@@ -27,12 +33,14 @@ internal class MlkitDocumentScannerLibrary {
             )
 
             DocumentScannerResultMode.PDF_FILE -> options.setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_PDF)
-            
+
             DocumentScannerResultMode.BOTH -> options.setResultFormats(
                 GmsDocumentScannerOptions.RESULT_FORMAT_JPEG,
                 GmsDocumentScannerOptions.RESULT_FORMAT_PDF
             )
         }
+
+        options = options.setScannerMode(scannerMode)
 
         return GmsDocumentScanning.getClient(options.build())
     }
@@ -44,18 +52,18 @@ internal class MlkitDocumentScannerLibrary {
     ) {
         GmsDocumentScanningResult.fromActivityResultIntent(data)?.also { result ->
             result.pages.let {
-                if (it != null) {
-                    Log.d(LOGGING_TAG, "JPEG pages count ${it.size}")
-                    eventSinkJPEG?.success(it.map { page -> page.imageUri.toFile().readBytes() })
-                } else {
+                if (it.isNullOrEmpty()) {
                     Log.d(LOGGING_TAG, "null response (result.pages)")
                     eventSinkJPEG?.success(null)
+                } else {
+                    Log.d(LOGGING_TAG, "JPEG pages count ${it.size}")
+                    eventSinkJPEG?.success(it.map { page -> page.imageUri.toFile().readBytes() })
                 }
 
 
             }
             result.pdf.let {
-                if (it != null) {
+                if (it != null && it.pageCount > 0) {
                     Log.d(LOGGING_TAG, "PDF pages count ${it.pageCount}")
                     eventSinkPDF?.success(it.uri.toFile().readBytes())
                 } else {
