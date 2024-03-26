@@ -84,7 +84,6 @@ class MlkitDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
         if (call.method == START_DOCUMENT_SCANNER) {
             Log.d(LOGGING_TAG, call.arguments.toString())
 
-
             // Construct document scanner
             val scanner = library.buildGmsDocumentScanner(
                 maximumNumberOfPages = call.argument<Int>(ARGUMENT_NUMBER_OF_PAGES) ?: 1,
@@ -114,7 +113,7 @@ class MlkitDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAwa
                         )
                     }
                     .addOnFailureListener { exception ->
-                        Log.e(LOGGING_TAG, exception.message ?: "-")
+                        Log.e(LOGGING_TAG, "MLKit threw exception:\n" + exception.message)
                         result.error(
                             ERROR_CODE_START_SCAN_INTENT_FAILURE,
                             ERROR_MESSAGE_START_SCAN_INTENT_FAILURE,
