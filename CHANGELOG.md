@@ -1,3 +1,7 @@
+## 0.0.3
+
+Minor configuration changes to the `build.gradle` and updates to the `README.md`.
+
 ## 0.0.2
 
 Breaking change: `MlkitDocumentScannerPlugin` now introduces two streams, one of listening to JPEG and one for PDF results. In order to toggle which one of them should receive updates this version adds a new enum, `DocumentScannerResultMode`.
