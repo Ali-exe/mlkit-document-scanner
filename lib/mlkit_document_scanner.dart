@@ -70,7 +70,7 @@ enum MlkitDocumentScannerMode {
   /// Basic editing capabilities (crop, rotate, reorder pages, etc…).
   base(3),
 
-  /// Adds image filters (grayscale, auto image enhancement, etc…) to the
+  /// Adds image filters (gray scale, auto image enhancement, etc…) to the
   /// [MlkitDocumentScannerMode.base] mode.
   baseWithFilter(2);
 

@@ -50,14 +50,22 @@ internal class MlkitDocumentScannerLibrary {
         eventSinkJPEG: EventChannel.EventSink?,
         eventSinkPDF: EventChannel.EventSink?
     ) {
-        GmsDocumentScanningResult.fromActivityResultIntent(data)?.also { result ->
+        val documentScanningResult = GmsDocumentScanningResult.fromActivityResultIntent(data)
+        if (documentScanningResult == null) {
+            Log.d(LOGGING_TAG, "NOTHING CAME BACK FROM THE SCAN!!!")
+            return
+        }
+
+        documentScanningResult.also { result ->
             result.pages.let {
                 if (it.isNullOrEmpty()) {
                     Log.d(LOGGING_TAG, "null response (result.pages)")
                     eventSinkJPEG?.success(null)
                 } else {
                     Log.d(LOGGING_TAG, "JPEG pages count ${it.size}")
-                    eventSinkJPEG?.success(it.map { page -> page.imageUri.toFile().readBytes() })
+                    eventSinkJPEG?.success(it.map { page ->
+                        page.imageUri.toFile().readBytes()
+                    })
                 }
 
 
