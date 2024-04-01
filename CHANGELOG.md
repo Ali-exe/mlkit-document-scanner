@@ -1,3 +1,7 @@
+## 0.0.4
+
+This change open sources the project under a different license (from AGPL-3.0 to Apache License 2.0).
+
 ## 0.0.3
 
 Minor configuration changes to the `build.gradle` and updates to the `README.md`.
